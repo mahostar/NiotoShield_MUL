@@ -1,0 +1,126 @@
+@startuml NiotoShield Kit Sequence Diagram
+
+actor "User" as user
+participant "NiotoShield Kit" as kit
+participant "Face Processing Module" as faceProc
+participant "Anti-Spoofing Model" as antiSpoof
+participant "Face Recognition Model" as faceRec
+participant "Assistant Module" as assistant
+participant "Decryption Module" as decrypt
+database "Local Storage" as storage
+participant "Cloud Service" as cloud
+
+== Authentication Process ==
+
+group Face Authentication
+    user -> kit: Approach NiotoShield Kit
+    kit -> faceProc: Activate Face Detection
+    faceProc -> kit: Face Detected
+    kit --> user: Request to Look at Camera
+    
+    ' Anti-spoofing verification
+    faceProc -> antiSpoof: Send Face Image for Verification
+    antiSpoof -> antiSpoof: Apply Anti-Spoofing Checks
+    
+    alt Spoof Detected
+        antiSpoof --> faceProc: Spoof Alert
+        faceProc --> kit: Authentication Failed - Spoof Detected
+        kit --> user: Display Security Alert
+        kit -> cloud: Log Security Incident
+    else Real Face Verified
+        antiSpoof --> faceProc: Real Face Confirmed
+        
+        ' Face recognition
+        faceProc -> decrypt: Request Biometric Data
+        decrypt -> cloud: Retrieve Encrypted Biometric Data
+        cloud --> decrypt: Return Encrypted Data
+        decrypt -> decrypt: Decrypt Biometric Data
+        decrypt --> faceProc: Provide Decrypted Templates
+        
+        faceProc -> faceRec: Compare Face with Templates
+        
+        alt Face Not Recognized
+            faceRec --> faceProc: No Match Found
+            faceProc --> kit: Authentication Failed
+            kit --> user: Display Access Denied Message
+            kit -> cloud: Log Failed Authentication Attempt
+        else Face Recognized
+            faceRec --> faceProc: Identity Confirmed
+            faceProc --> kit: Authentication Successful
+            kit --> user: Display Welcome Message
+            kit -> cloud: Log Successful Authentication
+            
+            ' Optional auto-update of face data
+            faceProc -> faceProc: Extract New Face Features
+            faceProc -> decrypt: Encrypt Updated Features
+            decrypt -> cloud: Store Updated Encrypted Data
+        end
+    end
+end
+
+== Voice Assistant Interaction ==
+
+group Assistant Conversation
+    user -> kit: Say "Hey NiotoShield"
+    kit -> assistant: Activate Voice Recognition
+    assistant --> kit: Assistant Activated
+    kit --> user: Display Assistant Ready Indicator
+    
+    loop Conversation
+        user -> kit: Speak Command/Question
+        kit -> assistant: Process Voice Input
+        
+        opt Internet Query Required
+            assistant -> cloud: Send Query to Knowledge Base
+            cloud --> assistant: Return Information
+        end
+        
+        assistant -> kit: Generate Response
+        kit --> user: Speak/Display Response
+    end
+    
+    alt Timeout
+        kit -> assistant: Detect Conversation Inactivity
+        assistant -> kit: Suggest Ending Conversation
+        kit --> user: "Do you need anything else?"
+    else Manual Ending
+        user -> kit: Say "Thank you" or "Goodbye"
+        kit -> assistant: End Conversation Command
+    end
+    
+    assistant -> kit: End Conversation
+    kit --> user: Display Assistant Deactivated
+end
+
+== Emergency Assistance ==
+
+group Emergency Detection
+    user -> kit: Say Emergency Trigger Phrase
+    kit -> assistant: Detect Emergency Keywords
+    assistant -> kit: Trigger Emergency Protocol
+    kit -> cloud: Send Emergency Alert
+    kit --> user: "Emergency services have been notified"
+    
+    cloud -> kit: Confirm Alert Received
+    kit --> user: Display Confirmation
+    
+    opt Cancel Emergency
+        user -> kit: Say Cancel Phrase
+        kit -> cloud: Cancel Emergency Alert
+        cloud --> kit: Confirm Cancellation
+        kit --> user: "Emergency alert cancelled"
+    end
+end
+
+== System Status ==
+
+group Check System Status
+    user -> kit: Request System Status
+    kit -> storage: Check Device Health
+    storage --> kit: Return System Metrics
+    kit -> cloud: Verify Connection Status
+    cloud --> kit: Return Connection Health
+    kit --> user: Display System Status Summary
+end
+
+@enduml 

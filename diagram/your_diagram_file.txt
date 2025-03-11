@@ -1,0 +1,86 @@
+@startuml NiotoShield Use Case Diagram
+
+left to right direction
+skinparam usecase {
+  BackgroundColor LightBlue
+  BorderColor DarkBlue
+  ArrowColor Navy
+}
+
+actor "Administrator" as admin
+actor "User" as user
+
+rectangle "NiotoShield Use Case Diagram" {
+  ' User Authentication Use Cases
+  (Sign Up) as signUp
+  (Login) as login
+  (Verify Credentials) as verifyCredentials
+  
+  ' User Profile Management
+  (Manage Profile) as manageProfile
+  (Create Profile) as createProfile
+  (Edit Profile) as editProfile
+  (Delete Profile) as deleteProfile
+  
+  ' Biometric Data Management
+  (Manage Biometric Data) as manageBiometric
+  (Add Biometric Data) as addBiometric
+  (Update Biometric Data) as updateBiometric
+  (Remove Biometric Data) as removeBiometric
+  
+  ' System Monitoring
+  (View GPS Location) as viewGPS
+  (View System Logs) as viewLogs
+  (Delete System Logs) as deleteLogs
+  
+  ' Assistant Features
+  (Manage Assistant) as manageAssistant
+  (Start Assistance Conversation) as startAssistant
+  (End Assistance Conversation) as endAssistant
+  
+  ' Admin Use Cases
+  (Manage NiotoShield Products) as manageProducts
+  (Add Security Product) as addProduct
+  (Remove Security Product) as removeProduct
+  (Disable Security Product) as disableProduct
+  (Monitor User Location) as trackLocation
+  (Remove User Account) as removeUser
+  
+  ' Relationships - Include
+  login ..> verifyCredentials : <<include>>
+  manageProfile ..> createProfile : <<include>>
+  manageProfile ..> editProfile : <<include>>
+  manageProfile ..> deleteProfile : <<include>>
+  
+  manageBiometric ..> addBiometric : <<include>>
+  manageBiometric ..> updateBiometric : <<include>>
+  manageBiometric ..> removeBiometric : <<include>>
+  
+  manageAssistant ..> startAssistant : <<include>>
+  manageAssistant ..> endAssistant : <<include>>
+  
+  manageProducts ..> addProduct : <<include>>
+  manageProducts ..> removeProduct : <<include>>
+  manageProducts ..> disableProduct : <<include>>
+  
+  ' Relationships - Extend
+  viewLogs <.. deleteLogs : <<extend>>
+  trackLocation <.. removeUser : <<extend>>
+  
+  ' Admin Actor Connections
+  admin --> login
+  admin --> manageProducts
+  admin --> trackLocation
+  admin --> removeUser
+  
+  ' User Actor Connections
+  user --> signUp
+  user --> login
+  user --> manageProfile
+  user --> manageBiometric
+  user --> viewGPS
+  user --> viewLogs
+  user --> manageAssistant
+}
+
+@enduml

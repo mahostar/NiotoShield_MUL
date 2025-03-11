@@ -1,0 +1,134 @@
+@startuml NiotoShield Class Diagram
+
+' Styling
+skinparam class {
+    BackgroundColor LightBlue
+    ArrowColor Navy
+    BorderColor DarkBlue
+}
+
+' User Management Classes
+class User {
+    -id: UUID
+    -email: String
+    -password: String
+    +signUp()
+    +login()
+    +verifyCredentials()
+}
+
+class UserProfile {
+    -id: UUID
+    -name: String
+    -interest: String
+    -more_info: String
+    -image_urls: String
+    -images_encrypted_k: String
+    -profile_picture: String
+    -admin_id: UUID
+    -updated_at: Timestamp
+    +createProfile()
+    +updateProfile()
+    +deleteProfile()
+}
+
+class UserSettings {
+    -user_id: UUID
+    -settings: JSON
+    -updated_at: Timestamp
+    +updateSettings()
+    +getSettings()
+}
+
+' Admin Management
+class Admin {
+    -id: UUID
+    -email: String
+    -password: String
+    +manageProducts()
+    +removeUser()
+    +trackUserLocation()
+    +disableProduct()
+}
+
+' Product Management
+class Product {
+    -id: UUID
+    -product_key: String
+    -used: Boolean
+    -public_key: String
+    -user_id: UUID
+    -admin_id: UUID
+    +generateKey()
+    +validateKey()
+    +disableKey()
+}
+
+' Location Management
+class Localization {
+    -id: UUID
+    -user_id: UUID
+    -product_key: String
+    -lat: Float
+    -lng: Float
+    -created_at: Timestamp
+    +recordLocation()
+    +getLocationHistory()
+}
+
+' Notification System
+class Notification {
+    -id: Integer
+    -user_id: UUID
+    -message: String
+    -is_read: Boolean
+    -created_at: Timestamp
+    +createNotification()
+    +markAsRead()
+    +getUnreadNotifications()
+}
+
+' Messaging System
+class Message {
+    -id: Integer
+    -sender_id: UUID
+    -receiver_id: UUID
+    -message: String
+    -created_at: Timestamp
+    -is_admin: Boolean
+    +sendMessage()
+    +getMessageHistory()
+}
+
+' Relationships
+User "1" *-- "1" UserProfile : has
+User "1" *-- "1" UserSettings : has
+User "1" *-- "*" Localization : has
+User "1" *-- "*" Notification : receives
+User "1" -- "*" Message : sends/receives
+User "1" -- "*" Product : owns
+
+Admin "1" -- "*" Product : manages
+Admin "1" -- "*" User : manages
+Admin "1" -- "*" UserProfile : administers
+Admin "1" -- "*" Message : sends/receives
+
+Product "1" -- "*" Localization : tracks
+
+' Notes
+note right of User
+  Handles user authentication
+  and basic user management
+end note
+
+note right of Admin
+  Manages system security
+  and user oversight
+end note
+
+note bottom of Product
+  Represents NiotoShield
+  security devices
+end note
+
+@enduml 

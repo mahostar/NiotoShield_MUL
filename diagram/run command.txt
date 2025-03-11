@@ -1,0 +1,5 @@
+java -jar plantuml-1.2024.3.jar -tsvg -scale 2 your_diagram_file.txt
+
+
+java -jar plantuml-1.2024.3.jar -tsvg -scale 2 your_diagram_file.txt
+

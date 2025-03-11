@@ -1,0 +1,208 @@
+@startuml NiotoShield Admin Sequence Diagram
+
+actor "Administrator" as admin
+participant "Admin Portal" as portal
+participant "AuthController" as authCtrl
+participant "ProductController" as prodCtrl
+participant "UserManagementController" as userCtrl
+participant "MonitoringController" as monCtrl
+database "Database" as db
+
+== Admin Authentication ==
+
+group Admin Login Process
+    admin -> portal: Enter Admin Credentials
+    portal -> authCtrl: Attempt Admin Login
+    authCtrl -> db: Verify Admin Credentials
+    
+    alt Invalid Credentials
+        db --> authCtrl: Authentication Failed
+        authCtrl --> portal: Login Failed
+        portal --> admin: Display Error Message
+    else Valid Credentials
+        db --> authCtrl: Admin Authenticated
+        authCtrl --> portal: Login Successful
+        portal --> admin: Display Admin Dashboard
+    end
+end
+
+== NiotoShield Product Management ==
+
+group Add Security Product
+    admin -> portal: Navigate to Product Management
+    portal --> admin: Display Product Management Interface
+    admin -> portal: Initiate New Product Creation
+    portal -> prodCtrl: Request New Product Form
+    prodCtrl --> portal: Provide Product Form
+    portal --> admin: Display Product Creation Form
+    admin -> portal: Submit Product Details
+    portal -> prodCtrl: Process New Product
+    prodCtrl -> db: Generate Product Key
+    prodCtrl -> db: Store Product Information
+    
+    alt Product Creation Failed
+        db --> prodCtrl: Database Error
+        prodCtrl --> portal: Product Creation Failed
+        portal --> admin: Display Error Message
+    else Product Creation Successful
+        db --> prodCtrl: Product Created Successfully
+        prodCtrl --> portal: Product Creation Successful
+        portal --> admin: Display Success Message and Product Key
+    end
+end
+
+group Remove Security Product
+    admin -> portal: View Product List
+    portal -> prodCtrl: Request Product List
+    prodCtrl -> db: Query Product Records
+    db --> prodCtrl: Return Product Data
+    prodCtrl --> portal: Process Product List
+    portal --> admin: Display Product List
+    
+    admin -> portal: Select Product for Removal
+    portal -> prodCtrl: Submit Removal Request
+    prodCtrl -> portal: Request Confirmation
+    portal -> admin: Display Confirmation Dialog
+    admin -> portal: Confirm Removal
+    portal -> prodCtrl: Confirm Product Removal
+    prodCtrl -> db: Delete Product Record
+    
+    alt Removal Failed
+        db --> prodCtrl: Deletion Error
+        prodCtrl --> portal: Removal Failed
+        portal --> admin: Display Error Message
+    else Removal Successful
+        db --> prodCtrl: Product Deleted
+        prodCtrl --> portal: Removal Successful
+        portal --> admin: Display Success Message
+    end
+end
+
+group Disable Security Product
+    admin -> portal: View Product List
+    portal -> prodCtrl: Request Product List
+    prodCtrl -> db: Query Product Records
+    db --> prodCtrl: Return Product Data
+    prodCtrl --> portal: Process Product List
+    portal --> admin: Display Product List
+    
+    admin -> portal: Select Product to Disable
+    portal -> prodCtrl: Submit Disable Request
+    prodCtrl -> portal: Request Confirmation
+    portal -> admin: Display Confirmation Dialog
+    admin -> portal: Confirm Disable
+    portal -> prodCtrl: Confirm Product Disable
+    prodCtrl -> db: Update Product Status
+    
+    alt Disable Failed
+        db --> prodCtrl: Update Error
+        prodCtrl --> portal: Disable Failed
+        portal --> admin: Display Error Message
+    else Disable Successful
+        db --> prodCtrl: Product Disabled
+        prodCtrl --> portal: Disable Successful
+        portal --> admin: Display Success Message
+    end
+end
+
+== User Management ==
+
+group Monitor User Location
+    admin -> portal: Navigate to User Monitoring
+    portal -> userCtrl: Request User List
+    userCtrl -> db: Query User Records
+    db --> userCtrl: Return User Data
+    userCtrl --> portal: Process User List
+    portal --> admin: Display User List
+    
+    admin -> portal: Select User to Monitor
+    portal -> monCtrl: Request Location Data
+    monCtrl -> db: Query Location Records
+    db --> monCtrl: Return Location History
+    monCtrl --> portal: Process Location Data
+    portal --> admin: Display Map with User Location
+    
+    opt Real-time Tracking
+        portal -> monCtrl: Enable Real-time Tracking
+        monCtrl -> db: Subscribe to Location Updates
+        
+        loop Location Updates
+            db --> monCtrl: New Location Data
+            monCtrl --> portal: Update Location
+            portal --> admin: Refresh Map Display
+        end
+        
+        admin -> portal: Disable Real-time Tracking
+        portal -> monCtrl: Unsubscribe from Updates
+    end
+end
+
+group Remove User Account
+    admin -> portal: Navigate to User Management
+    portal -> userCtrl: Request User List
+    userCtrl -> db: Query User Records
+    db --> userCtrl: Return User Data
+    userCtrl --> portal: Process User List
+    portal --> admin: Display User List
+    
+    admin -> portal: Select User for Removal
+    portal -> userCtrl: Submit Removal Request
+    userCtrl -> portal: Request Confirmation
+    portal -> admin: Display Confirmation Dialog with Warning
+    admin -> portal: Confirm Removal
+    portal -> userCtrl: Confirm User Removal
+    
+    userCtrl -> db: Begin Transaction
+    userCtrl -> db: Delete User Settings
+    userCtrl -> db: Delete User Profiles
+    userCtrl -> db: Delete Biometric Data
+    userCtrl -> db: Delete User Account
+    userCtrl -> db: Commit Transaction
+    
+    alt Removal Failed
+        db --> userCtrl: Transaction Error
+        userCtrl -> db: Rollback Transaction
+        userCtrl --> portal: Removal Failed
+        portal --> admin: Display Error Message
+    else Removal Successful
+        db --> userCtrl: Transaction Complete
+        userCtrl --> portal: Removal Successful
+        portal --> admin: Display Success Message
+    end
+end
+
+== Emergency Response ==
+
+group Emergency Alert Handling
+    db -> monCtrl: Trigger Emergency Alert
+    monCtrl -> portal: Forward Alert Notification
+    portal --> admin: Display Emergency Alert
+    admin -> portal: Acknowledge Alert
+    portal -> monCtrl: Log Alert Acknowledgment
+    monCtrl -> db: Update Alert Status
+    
+    alt Contact User
+        admin -> portal: Initiate User Contact
+        portal -> monCtrl: Start Emergency Protocol
+        monCtrl -> db: Log Emergency Response
+        portal --> admin: Display Contact Interface
+    else Alert Authorities
+        admin -> portal: Alert External Authorities
+        portal -> monCtrl: Trigger External Alert
+        monCtrl -> db: Log Authority Notification
+        portal --> admin: Display Confirmation
+    end
+end
+
+== System Maintenance ==
+
+group View System Analytics
+    admin -> portal: Request System Analytics
+    portal -> monCtrl: Get System Metrics
+    monCtrl -> db: Query Usage Statistics
+    db --> monCtrl: Return Analytics Data
+    monCtrl --> portal: Process Analytics Data
+    portal --> admin: Display Analytics Dashboard
+end
+
+@enduml 

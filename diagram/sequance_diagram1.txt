@@ -1,0 +1,160 @@
+@startuml NiotoShield User Sequence Diagram
+
+actor "User" as user
+participant "Mobile App" as app
+participant "AuthController" as authCtrl
+participant "ProfileController" as profCtrl
+participant "BiometricController" as bioCtrl
+participant "LocationController" as locCtrl
+participant "LogController" as logCtrl
+participant "AssistantController" as assistCtrl
+database "Database" as db
+
+== User Authentication ==
+
+group Sign Up Process
+    user -> app: Initiates Sign Up
+    app -> authCtrl: Submit Registration Details
+    authCtrl -> db: Check if Email Exists
+    
+    alt Email Already Exists
+        db --> authCtrl: Email Exists Error
+        authCtrl --> app: Registration Failed
+        app --> user: Display Error Message
+    else Email Available
+        db --> authCtrl: Email Available
+        authCtrl -> db: Create User Account
+        db --> authCtrl: Account Created
+        authCtrl --> app: Registration Successful
+        app --> user: Account Created Successfully
+    end
+end
+
+group Login Process
+    user -> app: Enter Credentials
+    app -> authCtrl: Attempt Login
+    authCtrl -> db: Verify Credentials
+    
+    alt Invalid Credentials
+        db --> authCtrl: Authentication Failed
+        authCtrl --> app: Login Failed
+        app --> user: Display Error Message
+    else Valid Credentials
+        db --> authCtrl: User Authenticated
+        authCtrl --> app: Login Successful
+        app --> user: Display Dashboard
+    end
+end
+
+== Profile Management ==
+
+group Create Profile with Biometric Data
+    user -> app: Initiates Profile Creation
+    app -> profCtrl: Submit Profile Details
+    
+    ' Biometric data collection as part of profile creation
+    app --> user: Request to Select Face Images
+    user -> app: Select Multiple Face Images
+    app -> bioCtrl: Submit Face Images
+    bioCtrl -> bioCtrl: Apply Hybrid Encryption
+    bioCtrl -> profCtrl: Send Encrypted Biometric Data
+    
+    profCtrl -> db: Create Profile Record with Biometric Data
+    db --> profCtrl: Profile Created
+    profCtrl --> app: Profile Creation Successful
+    app --> user: Display Profile Page
+end
+
+group Update Profile
+    user -> app: Edit Profile
+    app -> profCtrl: Submit Updated Profile
+    
+    opt Update Biometric Data
+        app --> user: Request to Select New Face Images
+        user -> app: Select New Face Images
+        app -> bioCtrl: Submit New Face Images
+        bioCtrl -> bioCtrl: Apply Hybrid Encryption
+        bioCtrl -> profCtrl: Send Encrypted Biometric Data
+    end
+    
+    profCtrl -> db: Update Profile Record
+    db --> profCtrl: Profile Updated
+    profCtrl --> app: Update Successful
+    app --> user: Display Updated Profile
+end
+
+group Delete Profile
+    user -> app: Request Profile Deletion
+    app -> profCtrl: Submit Deletion Request
+    profCtrl -> app: Request Confirmation
+    app -> user: Display Confirmation Dialog
+    user -> app: Confirm Deletion
+    app -> profCtrl: Confirm Deletion
+    profCtrl -> db: Delete Profile Record (Including Biometric Data)
+    db --> profCtrl: Profile Deleted
+    profCtrl --> app: Deletion Successful
+    app --> user: Redirect to Login Page
+end
+
+== System Monitoring ==
+
+group View GPS Location
+    user -> app: Request Location View
+    app -> locCtrl: Get Location Data
+    locCtrl -> db: Query Location Records
+    db --> locCtrl: Return Location Data
+    locCtrl --> app: Process Location Data
+    app --> user: Display Map with Location
+end
+
+group View System Logs
+    user -> app: Request System Logs
+    app -> logCtrl: Get Log Data
+    logCtrl -> db: Query Log Records
+    db --> logCtrl: Return Log Data
+    logCtrl --> app: Process Log Data
+    app --> user: Display Log Entries
+end
+
+group Delete System Logs
+    user -> app: Request Log Deletion
+    app -> logCtrl: Submit Deletion Request
+    logCtrl -> app: Request Confirmation
+    app -> user: Display Confirmation Dialog
+    user -> app: Confirm Deletion
+    app -> logCtrl: Confirm Deletion
+    logCtrl -> db: Delete Log Records
+    db --> logCtrl: Logs Deleted
+    logCtrl --> app: Deletion Successful
+    app --> user: Display Success Message
+end
+
+== Assistant Interactions ==
+
+group Start Assistant Conversation
+    user -> app: Request Assistant
+    app -> assistCtrl: Initiate Conversation
+    assistCtrl -> db: Load User Context
+    db --> assistCtrl: Return Context Data
+    assistCtrl --> app: Assistant Ready
+    app --> user: Display Assistant Interface
+    
+    loop Conversation
+        user -> app: Send Message
+        app -> assistCtrl: Process Message
+        assistCtrl -> db: Update Conversation History
+        assistCtrl --> app: Return Response
+        app --> user: Display Assistant Response
+    end
+end
+
+group End Assistant Conversation
+    user -> app: End Conversation
+    app -> assistCtrl: Terminate Session
+    assistCtrl -> db: Save Conversation History
+    db --> assistCtrl: History Saved
+    assistCtrl --> app: Session Terminated
+    app --> user: Close Assistant Interface
+end
+
+@enduml 
